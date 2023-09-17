@@ -1,5 +1,5 @@
 {
-    "name": "lintiger",
+    "name": "unlimint",
     "version": "0.1.0",
     "description": "Pure TypeScript library for dealing with insanely large integers",
     "main": "build/index.js",
