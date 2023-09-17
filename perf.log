@@ -1,0 +1,223 @@
+Base: 2
+
+Total time without cache: 15ms
+Total time with cache: 3ms
+Difference in time: 12
+Difference in percentage: 80%
+rss 35.48 MB
+heapTotal 7.63 MB
+heapUsed 5.82 MB
+external 0.51 MB
+arrayBuffers 0.02 MB
+Cache stats: 0 hits, 0 misses, 0 size, -1 max size
+Cache hit rate: NaN%
+
+----------------------------------------
+Base: 3
+
+Total time without cache: 21596ms
+Total time with cache: 9599ms
+Difference in time: 11997
+Difference in percentage: 55.5519540655677%
+rss 626.17 MB
+heapTotal 593.89 MB
+heapUsed 555.91 MB
+external 0.51 MB
+arrayBuffers 0.02 MB
+Cache stats: 251922 hits, 707939 misses, 707717 size, -1 max size
+Cache hit rate: 26.24567515504849%
+
+----------------------------------------
+Base: 4
+
+Total time without cache: 18064ms
+Total time with cache: 7904ms
+Difference in time: 10160
+Difference in percentage: 56.2444641275465%
+rss 1134.71 MB
+heapTotal 1099.98 MB
+heapUsed 1056.66 MB
+external 0.51 MB
+arrayBuffers 0.02 MB
+Cache stats: 209007 hits, 561926 misses, 561732 size, -1 max size
+Cache hit rate: 27.1109162534228%
+
+----------------------------------------
+Base: 5
+
+Total time without cache: 16164ms
+Total time with cache: 6709ms
+Difference in time: 9455
+Difference in percentage: 58.49418460777035%
+rss 440.34 MB
+heapTotal 408.14 MB
+heapUsed 371.61 MB
+external 0.51 MB
+arrayBuffers 0.02 MB
+Cache stats: 181924 hits, 483566 misses, 483361 size, -1 max size
+Cache hit rate: 27.336849539437107%
+
+----------------------------------------
+Base: 6
+
+Total time without cache: 13683ms
+Total time with cache: 5907ms
+Difference in time: 7776
+Difference in percentage: 56.829642622231965%
+rss 406.91 MB
+heapTotal 374.39 MB
+heapUsed 348.5 MB
+external 0.51 MB
+arrayBuffers 0.02 MB
+Cache stats: 167130 hits, 435639 misses, 435440 size, -1 max size
+Cache hit rate: 27.727039711730367%
+
+----------------------------------------
+Base: 7
+
+Total time without cache: 12446ms
+Total time with cache: 5475ms
+Difference in time: 6971
+Difference in percentage: 56.00996304033424%
+rss 763.45 MB
+heapTotal 729.98 MB
+heapUsed 689.74 MB
+external 0.51 MB
+arrayBuffers 0.02 MB
+Cache stats: 156577 hits, 407500 misses, 407301 size, -1 max size
+Cache hit rate: 27.75808976434068%
+
+----------------------------------------
+Base: 8
+
+Total time without cache: 12193ms
+Total time with cache: 5056ms
+Difference in time: 7137
+Difference in percentage: 58.53358484376281%
+rss 365.48 MB
+heapTotal 333.65 MB
+heapUsed 299.61 MB
+external 0.51 MB
+arrayBuffers 0.02 MB
+Cache stats: 148474 hits, 371469 misses, 371282 size, -1 max size
+Cache hit rate: 28.555822465154833%
+
+----------------------------------------
+Base: 9
+
+Total time without cache: 10897ms
+Total time with cache: 4825ms
+Difference in time: 6072
+Difference in percentage: 55.72175828209599%
+rss 345.36 MB
+heapTotal 312.88 MB
+heapUsed 291.14 MB
+external 0.51 MB
+arrayBuffers 0.02 MB
+Cache stats: 142652 hits, 357951 misses, 357759 size, -1 max size
+Cache hit rate: 28.496033783257392%
+
+----------------------------------------
+Base: 10
+
+Total time without cache: 10566ms
+Total time with cache: 4658ms
+Difference in time: 5908
+Difference in percentage: 55.91519969714177%
+rss 649.4 MB
+heapTotal 616.47 MB
+heapUsed 577.31 MB
+external 0.51 MB
+arrayBuffers 0.02 MB
+Cache stats: 137394 hits, 342169 misses, 341976 size, -1 max size
+Cache hit rate: 28.649833285720543%
+
+----------------------------------------
+Base: 11
+
+Total time without cache: 10478ms
+Total time with cache: 4597ms
+Difference in time: 5881
+Difference in percentage: 56.12712349685054%
+rss 945.52 MB
+heapTotal 910.8 MB
+heapUsed 866.58 MB
+external 0.51 MB
+arrayBuffers 0.02 MB
+Cache stats: 133540 hits, 333181 misses, 332993 size, -1 max size
+Cache hit rate: 28.612382986837957%
+
+----------------------------------------
+Base: 12
+
+Total time without cache: 10285ms
+Total time with cache: 4315ms
+Difference in time: 5970
+Difference in percentage: 58.045697617890134%
+rss 327.66 MB
+heapTotal 293.9 MB
+heapUsed 270.5 MB
+external 0.51 MB
+arrayBuffers 0.02 MB
+Cache stats: 130109 hits, 317382 misses, 317192 size, -1 max size
+Cache hit rate: 29.075221624568986%
+
+----------------------------------------
+Base: 13
+
+Total time without cache: 9374ms
+Total time with cache: 4192ms
+Difference in time: 5182
+Difference in percentage: 55.280563260081074%
+rss 324.12 MB
+heapTotal 290.9 MB
+heapUsed 257.11 MB
+external 0.51 MB
+arrayBuffers 0.02 MB
+Cache stats: 127138 hits, 312428 misses, 312241 size, -1 max size
+Cache hit rate: 28.923529117356665%
+
+----------------------------------------
+Base: 14
+
+Total time without cache: 8967ms
+Total time with cache: 4044ms
+Difference in time: 4923
+Difference in percentage: 54.90130478420877%
+rss 309.38 MB
+heapTotal 276.39 MB
+heapUsed 243.45 MB
+external 0.51 MB
+arrayBuffers 0.02 MB
+Cache stats: 124384 hits, 303472 misses, 303283 size, -1 max size
+Cache hit rate: 29.071463296062227%
+
+----------------------------------------
+Base: 15
+
+Total time without cache: 8806ms
+Total time with cache: 3957ms
+Difference in time: 4849
+Difference in percentage: 55.064728594140355%
+rss 578.14 MB
+heapTotal 544.48 MB
+heapUsed 518.17 MB
+external 0.51 MB
+arrayBuffers 0.02 MB
+Cache stats: 122079 hits, 301099 misses, 300911 size, -1 max size
+Cache hit rate: 28.848144279712084%
+
+----------------------------------------
+Base: 16
+
+Total time without cache: 3ms
+Total time with cache: 5ms
+Difference in time: -2
+Difference in percentage: -66.66666666666666%
+rss 580.19 MB
+heapTotal 545.73 MB
+heapUsed 506.56 MB
+external 0.51 MB
+arrayBuffers 0.02 MB
+Cache stats: 0 hits, 0 misses, 0 size, -1 max size
+Cache hit rate: NaN%
