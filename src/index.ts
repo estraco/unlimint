@@ -1,7 +1,9 @@
-export type NumBase = 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 24 | 25 | 26 | 27 | 28 | 29 | 30 | 31 | 32 | 33 | 34 | 35 | 36;
+export type NumBase = 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 24 | 25 | 26 | 27 | 28 | 29 | 30 | 31 | 32 | 33 | 34 | 35 | 36 | 64;
+
+export type CacheOp = '+' | '-' | '*' | '/%' | '^';
 
 export type CacheEntry = {
-    op: '+' | '-' | '*' | '/%' | '^';
+    op: CacheOp;
     i1: UnlimInt;
     i2: UnlimInt;
     result: UnlimInt | {
@@ -10,7 +12,7 @@ export type CacheEntry = {
     };
 };
 
-export type CacheKey = `${'+' | '-' | '*' | '/%' | '^'};${string};${string}`;
+export type CacheKey = `${CacheOp};${string};${string}`;
 
 export default class UnlimInt {
     public static DEFAULT_CACHE_SIZE = 1000;
@@ -29,10 +31,10 @@ export default class UnlimInt {
     Most significant bit is first, least significant byte is first
     */
 
-    constructor(size: number, sign: boolean) {
+    constructor(size: number, negative: boolean) {
         this.buf = Buffer.alloc(Math.ceil(size / 8));
         this.size = size;
-        this.negative = sign;
+        this.negative = negative;
     }
 
     public static enableCache(size = this.CACHE_SIZE): void {
@@ -40,11 +42,14 @@ export default class UnlimInt {
         this.CACHE_SIZE = size;
     }
 
-    public static disableCache(): void {
+    public static disableCache(clear = true): void {
         this.CACHE_ENABLED = false;
-        this.cache = new Map();
-        this.cacheHits = 0;
-        this.cacheMisses = 0;
+
+        if (clear) {
+            this.cache = new Map();
+            this.cacheHits = 0;
+            this.cacheMisses = 0;
+        }
     }
 
     private static cacheGet(op: '/%', i1: UnlimInt, i2: UnlimInt): {
@@ -52,7 +57,7 @@ export default class UnlimInt {
         remainder: UnlimInt;
     } | null;
     private static cacheGet(op: '+' | '-' | '*' | '^', i1: UnlimInt, i2: UnlimInt): UnlimInt | null;
-    private static cacheGet(op: '+' | '-' | '*' | '/%' | '^', i1: UnlimInt, i2: UnlimInt): UnlimInt | {
+    private static cacheGet(op: CacheOp, i1: UnlimInt, i2: UnlimInt): UnlimInt | {
         quotient: UnlimInt;
         remainder: UnlimInt;
     } | null {
@@ -60,7 +65,7 @@ export default class UnlimInt {
             return null;
         }
 
-        const key = `${op};${i1.toString(2)};${i2.toString(2)}` as CacheKey;
+        const key = `${op};${i1.toString(64)};${i2.toString(64)}` as CacheKey;
 
         const entry = this.cache.get(key);
 
@@ -88,7 +93,7 @@ export default class UnlimInt {
             return;
         }
 
-        const key = `${op};${i1.toString(2)};${i2.toString(2)}` as CacheKey;
+        const key = `${op};${i1.toString(64)};${i2.toString(64)}` as CacheKey;
 
         this.cache.set(key, {
             op,
@@ -106,12 +111,12 @@ export default class UnlimInt {
         }
     }
 
-    public static cacheStats(): { hit: number; miss: number; size: number; maxSize: number; percentage: number } {
+    public static cacheStats(): { hit: number; miss: number; size: number; maxSize: number; hitRate: number } {
         return {
             hit: this.cacheHits,
             miss: this.cacheMisses,
             size: this.cache.size,
-            percentage: this.cacheHits / (this.cacheHits + this.cacheMisses) * 100,
+            hitRate: this.cacheHits / (this.cacheHits + this.cacheMisses) * 100,
             maxSize: this.CACHE_SIZE
         };
     }
@@ -138,7 +143,7 @@ export default class UnlimInt {
         }
     }
 
-    public add(other: UnlimInt, size: number = UnlimInt.calcSize(this, other, '+')): UnlimInt {
+    public cadd(other: UnlimInt, size: number = UnlimInt.calcSize(this, other, '+')): UnlimInt {
         const cached = UnlimInt.cacheGet('+', this, other);
 
         if (cached) {
@@ -166,8 +171,8 @@ export default class UnlimInt {
         return result;
     }
 
-    public sadd(other: UnlimInt, size: number = UnlimInt.calcSize(this, other, '+')): UnlimInt {
-        const result = this.add(other, size);
+    public add(other: UnlimInt, size: number = UnlimInt.calcSize(this, other, '+')): UnlimInt {
+        const result = this.cadd(other, size);
 
         this.buf = result.buf;
         this.size = result.size;
@@ -204,7 +209,7 @@ export default class UnlimInt {
     }
 
     public sub(other: UnlimInt, size: number = UnlimInt.calcSize(this, other, '-')): UnlimInt {
-        const result = this.sub(other, size);
+        const result = this.csub(other, size);
 
         this.buf = result.buf;
         this.size = result.size;
@@ -223,7 +228,7 @@ export default class UnlimInt {
 
         for (let i = 0; i < this.size; i++) {
             if (this.getBit(i)) {
-                result.sadd(other.cshiftLeft(i));
+                result.add(other.cshiftLeft(i));
             }
         }
 
@@ -241,7 +246,7 @@ export default class UnlimInt {
         return this;
     }
 
-    public pow(other: UnlimInt): UnlimInt {
+    public cpow(other: UnlimInt): UnlimInt {
         const cached = UnlimInt.cacheGet('^', this, other);
 
         if (cached) {
@@ -254,13 +259,22 @@ export default class UnlimInt {
 
         const result = UnlimInt.fromNumber(1);
 
-        for (let i = UnlimInt.fromNumber(0); i.lessThan(other); i.sadd(UnlimInt.fromNumber(1))) {
+        for (let i = UnlimInt.fromNumber(0); i.lessThan(other); i.add(UnlimInt.fromNumber(1))) {
             result.mul(this);
         }
 
         UnlimInt.cacheSet('^', this, other, result);
 
         return result;
+    }
+
+    public pow(other: UnlimInt): UnlimInt {
+        const result = this.cpow(other);
+
+        this.buf = result.buf;
+        this.size = result.size;
+
+        return this;
     }
 
     private divop(divisor: UnlimInt): {
@@ -315,7 +329,7 @@ export default class UnlimInt {
 
             const r = {
                 quotient: UnlimInt.fromBigInt(result),
-                remainder: this.sub(dvsr.mul(UnlimInt.fromBigInt(result)))
+                remainder: this.csub(dvsr.cmul(UnlimInt.fromBigInt(result)))
             };
 
             UnlimInt.cacheSet('/%', this, divisor, r);
@@ -341,16 +355,16 @@ export default class UnlimInt {
             i--;
         }
 
-        const rem = this.sub(temp);
-        const div = UnlimInt.fromNumber(2).pow(UnlimInt.fromNumber(i));
+        const rem = this.csub(temp);
+        const div = UnlimInt.fromNumber(2).cpow(UnlimInt.fromNumber(i));
 
         const divmod = rem.divop(dvsr);
 
-        const quotient = div.add(divmod.quotient);
+        const quotient = div.cadd(divmod.quotient);
 
         const r = {
-            quotient,
-            remainder: divmod.remainder
+            quotient: quotient.ctrim(),
+            remainder: divmod.remainder.ctrim()
         };
 
         UnlimInt.cacheSet('/%', this, divisor, r);
@@ -652,7 +666,7 @@ export default class UnlimInt {
 
     // public toString(base: 2 | 10 | 16 = 2): string {
     public toString(base: NumBase = 2): string {
-        if (base < 2 || base > 36) {
+        if (base < 2 || base > 36 && base !== 64) {
             throw new Error('Base must be between 2 and 36');
         }
 
@@ -704,13 +718,28 @@ export default class UnlimInt {
             }
 
             return result;
+        } else if (base === 64) {
+            return this.buf.toString('base64');
         } else {
             /* Base n */
             let result = '';
             let temp = this.copy();
 
+            const computed: string[] = [];
+
             while (!temp.isZero()) {
                 const divmod = temp.divop(UnlimInt.fromNumber(base));
+
+                // console.log(divmod);
+
+                const key = `${temp.toString(2)};${divmod.quotient.toString(2)};${divmod.remainder.toString(2)}`;
+
+                if (!computed.includes(key)) {
+                    // console.log(key);
+                    computed.push(key);
+                } else {
+                    console.log('Loop detected');
+                }
 
                 result = divmod.remainder.toNumber().toString(base) + result;
                 temp = divmod.quotient;
@@ -972,6 +1001,28 @@ export default class UnlimInt {
 
     static fromBinary(value: string): UnlimInt {
         return UnlimInt.fromString(value, 2);
+    }
+
+    static from(value: number | bigint | Buffer | string, base?: number): UnlimInt {
+        if (typeof value === 'number') {
+            return UnlimInt.fromNumber(value);
+        } else if (typeof value === 'bigint') {
+            return UnlimInt.fromBigInt(value);
+        } else if (Buffer.isBuffer(value)) {
+            return UnlimInt.fromBuffer(value, false);
+        } else if (typeof value === 'string') {
+            if (base) {
+                return UnlimInt.fromString(value, base);
+            } else if (value.startsWith('0x')) {
+                return UnlimInt.fromHex(value.slice(2));
+            } else if (value.startsWith('0b')) {
+                return UnlimInt.fromBinary(value.slice(2));
+            } else {
+                return UnlimInt.fromDecimal(value);
+            }
+        } else {
+            throw new Error('Invalid type');
+        }
     }
 
     static calcSize(i1: UnlimInt, i2: UnlimInt, op: '+' | '-' | '*' | '/' | '%' | '^' | '&' | '|' | '~'): number {

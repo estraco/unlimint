@@ -33,3 +33,7 @@ export default function generalTest() {
 
     console.log(e.toString(16), e.toString(16) === b16str);
 }
+
+if (require.main === module) {
+    generalTest();
+}

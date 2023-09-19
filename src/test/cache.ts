@@ -2,7 +2,12 @@ import UnlimInt from '..';
 import crypto from 'crypto';
 
 export default function cacheTest() {
-    const hex = crypto.randomBytes(24).toString('hex');
+    const BITS = 24;
+
+    console.log(`Cache test ${BITS} bits`);
+    const hex = crypto.randomBytes(BITS / 8).toString('hex');
+
+    console.log(`Random hex: ${hex}`);
 
     UnlimInt.disableCache();
 
@@ -23,7 +28,7 @@ export default function cacheTest() {
     UnlimInt.enableCache(-1);
 
     for (let i = 0; i < 0xff; i++) {
-        const a = UnlimInt.fromString(hex, 16);
+        const a = UnlimInt.fromHex(hex);
 
         const start = Date.now();
 
@@ -35,4 +40,8 @@ export default function cacheTest() {
 
     console.log();
     console.log(`Cache stats: ${JSON.stringify(UnlimInt.cacheStats(), null, 4)}`);
+}
+
+if (require.main === module) {
+    cacheTest();
 }
