@@ -14,6 +14,8 @@ export type CacheEntry = {
 
 export type CacheKey = `${CacheOp};${string};${string}`;
 
+export type ArgType = UnlimInt | number | bigint | Buffer | string;
+
 export default class UnlimInt {
     public static DEFAULT_CACHE_SIZE = 1000;
 
@@ -143,8 +145,12 @@ export default class UnlimInt {
         }
     }
 
-    public cadd(other: UnlimInt, size: number = UnlimInt.calcSize(this, other, '+')): UnlimInt {
-        const cached = UnlimInt.cacheGet('+', this, other);
+    public cadd(other: ArgType, size?: number): UnlimInt {
+        const arg1 = other instanceof UnlimInt ? other : UnlimInt.from(other);
+
+        size ??= UnlimInt.calcSize(this, arg1, '+');
+
+        const cached = UnlimInt.cacheGet('+', this, arg1);
 
         if (cached) {
             return cached;
@@ -154,7 +160,7 @@ export default class UnlimInt {
         let carry = 0;
 
         for (let i = 0; i < result.size; i++) {
-            let sum = +this.getBit(i) + +other.getBit(i) + carry;
+            let sum = +this.getBit(i) + +arg1.getBit(i) + carry;
 
             if (sum > 1) {
                 sum -= 2;
@@ -166,12 +172,12 @@ export default class UnlimInt {
             result.setBit(i, sum === 1);
         }
 
-        UnlimInt.cacheSet('+', this, other, result);
+        UnlimInt.cacheSet('+', this, arg1, result);
 
         return result;
     }
 
-    public add(other: UnlimInt, size: number = UnlimInt.calcSize(this, other, '+')): UnlimInt {
+    public add(other: ArgType, size?: number): UnlimInt {
         const result = this.cadd(other, size);
 
         this.buf = result.buf;
@@ -180,8 +186,12 @@ export default class UnlimInt {
         return this;
     }
 
-    public csub(other: UnlimInt, size: number = UnlimInt.calcSize(this, other, '-')): UnlimInt {
-        const cached = UnlimInt.cacheGet('-', this, other);
+    public csub(other: ArgType, size?: number): UnlimInt {
+        const arg1 = other instanceof UnlimInt ? other : UnlimInt.from(other);
+
+        size ??= UnlimInt.calcSize(this, arg1, '-');
+
+        const cached = UnlimInt.cacheGet('-', this, arg1);
 
         if (cached) {
             return cached;
@@ -191,7 +201,7 @@ export default class UnlimInt {
         let borrow = 0;
 
         for (let i = 0; i < result.size; i++) {
-            let diff = +this.getBit(i) - +other.getBit(i) - borrow;
+            let diff = +this.getBit(i) - +arg1.getBit(i) - borrow;
 
             if (diff < 0) {
                 diff += 2;
@@ -203,12 +213,12 @@ export default class UnlimInt {
             result.setBit(i, diff === 1);
         }
 
-        UnlimInt.cacheSet('-', this, other, result);
+        UnlimInt.cacheSet('-', this, arg1, result);
 
         return result;
     }
 
-    public sub(other: UnlimInt, size: number = UnlimInt.calcSize(this, other, '-')): UnlimInt {
+    public sub(other: ArgType, size?: number): UnlimInt {
         const result = this.csub(other, size);
 
         this.buf = result.buf;
@@ -217,8 +227,12 @@ export default class UnlimInt {
         return this;
     }
 
-    public cmul(other: UnlimInt, size: number = UnlimInt.calcSize(this, other, '*')): UnlimInt {
-        const cached = UnlimInt.cacheGet('*', this, other);
+    public cmul(other: ArgType, size?: number): UnlimInt {
+        const arg1 = other instanceof UnlimInt ? other : UnlimInt.from(other);
+
+        size ??= UnlimInt.calcSize(this, arg1, '*');
+
+        const cached = UnlimInt.cacheGet('*', this, arg1);
 
         if (cached) {
             return cached;
@@ -228,16 +242,16 @@ export default class UnlimInt {
 
         for (let i = 0; i < this.size; i++) {
             if (this.getBit(i)) {
-                result.add(other.cshiftLeft(i));
+                result.add(arg1.cshiftLeft(i));
             }
         }
 
-        UnlimInt.cacheSet('*', this, other, result);
+        UnlimInt.cacheSet('*', this, arg1, result);
 
         return result;
     }
 
-    public mul(other: UnlimInt, size: number = UnlimInt.calcSize(this, other, '*')): UnlimInt {
+    public mul(other: ArgType, size?: number): UnlimInt {
         const result = this.cmul(other, size);
 
         this.buf = result.buf;
@@ -246,29 +260,31 @@ export default class UnlimInt {
         return this;
     }
 
-    public cpow(other: UnlimInt): UnlimInt {
-        const cached = UnlimInt.cacheGet('^', this, other);
+    public cpow(other: ArgType): UnlimInt {
+        const arg1 = other instanceof UnlimInt ? other : UnlimInt.from(other);
+
+        const cached = UnlimInt.cacheGet('^', this, arg1);
 
         if (cached) {
             return cached;
         }
 
-        if (other.negative) {
+        if (arg1.negative) {
             throw new Error('Exponent must be positive');
         }
 
         const result = UnlimInt.fromNumber(1);
 
-        for (let i = UnlimInt.fromNumber(0); i.lessThan(other); i.add(UnlimInt.fromNumber(1))) {
+        for (let i = UnlimInt.fromNumber(0); i.lessThan(arg1); i.add(1)) {
             result.mul(this);
         }
 
-        UnlimInt.cacheSet('^', this, other, result);
+        UnlimInt.cacheSet('^', this, arg1, result);
 
         return result;
     }
 
-    public pow(other: UnlimInt): UnlimInt {
+    public pow(other: ArgType): UnlimInt {
         const result = this.cpow(other);
 
         this.buf = result.buf;
@@ -277,17 +293,20 @@ export default class UnlimInt {
         return this;
     }
 
-    private divop(divisor: UnlimInt): {
+    private divop(divisor: ArgType): {
         quotient: UnlimInt,
         remainder: UnlimInt
     } {
-        const cached = UnlimInt.cacheGet('/%', this, divisor);
+        const arg1 = divisor instanceof UnlimInt ? divisor : UnlimInt.from(divisor);
+
+        const dvsr = arg1.ctrim();
+        const cacheKey = dvsr.copy();
+
+        const cached = UnlimInt.cacheGet('/%', this, cacheKey);
 
         if (cached) {
             return cached;
         }
-
-        const dvsr = divisor.ctrim();
 
         /* Start base cases */
         if (dvsr.isZero()) {
@@ -310,7 +329,7 @@ export default class UnlimInt {
 
         if (dvsr.equals(this)) {
             return {
-                quotient: UnlimInt.fromNumber(1).mul(UnlimInt.fromNumber(this.negative ? -1 : 1)),
+                quotient: UnlimInt.fromNumber(1).mul(this.negative ? -1 : 1),
                 remainder: UnlimInt.fromNumber(0)
             };
         }
@@ -329,10 +348,10 @@ export default class UnlimInt {
 
             const r = {
                 quotient: UnlimInt.fromBigInt(result),
-                remainder: this.csub(dvsr.cmul(UnlimInt.fromBigInt(result)))
+                remainder: this.csub(dvsr.cmul(result))
             };
 
-            UnlimInt.cacheSet('/%', this, divisor, r);
+            UnlimInt.cacheSet('/%', this, cacheKey, r);
 
             return r;
         }
@@ -341,10 +360,11 @@ export default class UnlimInt {
         // multiply divisor by 2^i
         // if larger, end and divide to get rem and quot
 
-        let i = 0;
         const temp = dvsr.copy();
 
         // somewhat inefficient, but it works
+        let i = 0;
+
         while (temp.lessThan(this)) {
             temp.shiftLeft(1);
             i++;
@@ -355,8 +375,10 @@ export default class UnlimInt {
             i--;
         }
 
+        // console.log(i, i2, temp.toString(2), temp2.toString(2), this.toString(2), dvsr.toString(2));
+
         const rem = this.csub(temp);
-        const div = UnlimInt.fromNumber(2).cpow(UnlimInt.fromNumber(i));
+        const div = UnlimInt.fromNumber(2).cpow(i);
 
         const divmod = rem.divop(dvsr);
 
@@ -367,44 +389,56 @@ export default class UnlimInt {
             remainder: divmod.remainder.ctrim()
         };
 
-        UnlimInt.cacheSet('/%', this, divisor, r);
+        UnlimInt.cacheSet('/%', this, cacheKey, r);
 
         return r;
     }
 
-    public div(divisor: UnlimInt): UnlimInt {
+    public div(divisor: ArgType): UnlimInt {
         return this.divop(divisor).quotient;
     }
 
-    public mod(other: UnlimInt): UnlimInt {
+    public mod(other: ArgType): UnlimInt {
         return this.divop(other).remainder;
     }
 
-    public bitAnd(other: UnlimInt, size: number = UnlimInt.calcSize(this, other, '&')): UnlimInt {
+    public bitAnd(other: ArgType, size?: number): UnlimInt {
+        const arg1 = other instanceof UnlimInt ? other : UnlimInt.from(other);
+
+        size ??= UnlimInt.calcSize(this, arg1, '&');
+
         const result = new UnlimInt(size, this.negative);
 
         for (let i = 0; i < result.size; i++) {
-            result.setBit(i, this.getBit(i) && other.getBit(i));
+            result.setBit(i, this.getBit(i) && arg1.getBit(i));
         }
 
         return result;
     }
 
-    public bitOr(other: UnlimInt, size: number = UnlimInt.calcSize(this, other, '|')): UnlimInt {
+    public bitOr(other: ArgType, size?: number): UnlimInt {
+        const arg1 = other instanceof UnlimInt ? other : UnlimInt.from(other);
+
+        size ??= UnlimInt.calcSize(this, arg1, '|');
+
         const result = new UnlimInt(size, this.negative);
 
         for (let i = 0; i < result.size; i++) {
-            result.setBit(i, this.getBit(i) || other.getBit(i));
+            result.setBit(i, this.getBit(i) || arg1.getBit(i));
         }
 
         return result;
     }
 
-    public bitXor(other: UnlimInt, size: number = UnlimInt.calcSize(this, other, '~')): UnlimInt {
+    public bitXor(other: ArgType, size?: number): UnlimInt {
+        const arg1 = other instanceof UnlimInt ? other : UnlimInt.from(other);
+
+        size ??= UnlimInt.calcSize(this, arg1, '^');
+
         const result = new UnlimInt(size, this.negative);
 
         for (let i = 0; i < result.size; i++) {
-            result.setBit(i, this.getBit(i) !== other.getBit(i));
+            result.setBit(i, this.getBit(i) !== arg1.getBit(i));
         }
 
         return result;
@@ -421,17 +455,19 @@ export default class UnlimInt {
     }
 
     public getMSB(): number;
-    public getMSB(against: UnlimInt): number;
-    public getMSB(against?: UnlimInt): number {
+    public getMSB(against: ArgType): number;
+    public getMSB(against?: ArgType): number {
         if (against) {
-            if (this.size !== against.size) {
+            const arg1 = against instanceof UnlimInt ? against : UnlimInt.from(against);
+
+            if (this.size !== arg1.size) {
                 throw new Error('Both numbers must be the same size');
             }
 
             for (let i = this.size - 1; i >= 0; i--) {
-                if (this.getBit(i) && !against.getBit(i)) {
+                if (this.getBit(i) && !arg1.getBit(i)) {
                     return i;
-                } else if (!this.getBit(i) && against.getBit(i)) {
+                } else if (!this.getBit(i) && arg1.getBit(i)) {
                     return i;
                 }
             }
@@ -468,17 +504,19 @@ export default class UnlimInt {
         return true;
     }
 
-    public greaterThan(other: UnlimInt): boolean {
-        if (this.getMSB() > other.getMSB()) {
+    public greaterThan(other: ArgType): boolean {
+        const arg1 = other instanceof UnlimInt ? other : UnlimInt.from(other);
+
+        if (this.getMSB() > arg1.getMSB()) {
             return true;
-        } else if (this.getMSB() < other.getMSB()) {
+        } else if (this.getMSB() < arg1.getMSB()) {
             return false;
         }
 
         for (let i = this.size - 1; i >= 0; i--) {
-            if (this.getBit(i) && !other.getBit(i)) {
+            if (this.getBit(i) && !arg1.getBit(i)) {
                 return true;
-            } else if (!this.getBit(i) && other.getBit(i)) {
+            } else if (!this.getBit(i) && arg1.getBit(i)) {
                 return false;
             }
         }
@@ -486,17 +524,19 @@ export default class UnlimInt {
         return false;
     }
 
-    public lessThan(other: UnlimInt): boolean {
-        if (this.getMSB() > other.getMSB()) {
+    public lessThan(other: ArgType): boolean {
+        const arg1 = other instanceof UnlimInt ? other : UnlimInt.from(other);
+
+        if (this.getMSB() > arg1.getMSB()) {
             return false;
-        } else if (this.getMSB() < other.getMSB()) {
+        } else if (this.getMSB() < arg1.getMSB()) {
             return true;
         }
 
         for (let i = this.size - 1; i >= 0; i--) {
-            if (this.getBit(i) && !other.getBit(i)) {
+            if (this.getBit(i) && !arg1.getBit(i)) {
                 return false;
-            } else if (!this.getBit(i) && other.getBit(i)) {
+            } else if (!this.getBit(i) && arg1.getBit(i)) {
                 return true;
             }
         }
@@ -504,17 +544,19 @@ export default class UnlimInt {
         return false;
     }
 
-    public greaterThanOrEqualTo(other: UnlimInt): boolean {
-        if (this.getMSB() > other.getMSB()) {
+    public greaterThanOrEqualTo(other: ArgType): boolean {
+        const arg1 = other instanceof UnlimInt ? other : UnlimInt.from(other);
+
+        if (this.getMSB() > arg1.getMSB()) {
             return true;
-        } else if (this.getMSB() < other.getMSB()) {
+        } else if (this.getMSB() < arg1.getMSB()) {
             return false;
         }
 
         for (let i = this.size - 1; i >= 0; i--) {
-            if (this.getBit(i) && !other.getBit(i)) {
+            if (this.getBit(i) && !arg1.getBit(i)) {
                 return true;
-            } else if (!this.getBit(i) && other.getBit(i)) {
+            } else if (!this.getBit(i) && arg1.getBit(i)) {
                 return false;
             }
         }
@@ -522,17 +564,19 @@ export default class UnlimInt {
         return true;
     }
 
-    public lessThanOrEqualTo(other: UnlimInt): boolean {
-        if (this.getMSB() > other.getMSB()) {
+    public lessThanOrEqualTo(other: ArgType): boolean {
+        const arg1 = other instanceof UnlimInt ? other : UnlimInt.from(other);
+
+        if (this.getMSB() > arg1.getMSB()) {
             return false;
-        } else if (this.getMSB() < other.getMSB()) {
+        } else if (this.getMSB() < arg1.getMSB()) {
             return true;
         }
 
         for (let i = this.size - 1; i >= 0; i--) {
-            if (this.getBit(i) && !other.getBit(i)) {
+            if (this.getBit(i) && !arg1.getBit(i)) {
                 return false;
-            } else if (!this.getBit(i) && other.getBit(i)) {
+            } else if (!this.getBit(i) && arg1.getBit(i)) {
                 return true;
             }
         }
@@ -592,13 +636,15 @@ export default class UnlimInt {
         }
     }
 
-    public equals(other: UnlimInt): boolean {
-        if (this.trimmedSize() !== other.trimmedSize()) {
+    public equals(other: ArgType): boolean {
+        const arg1 = other instanceof UnlimInt ? other : UnlimInt.from(other);
+
+        if (this.trimmedSize() !== arg1.trimmedSize()) {
             return false;
         }
 
         for (let i = 0; i < this.size; i++) {
-            if (this.getBit(i) !== other.getBit(i)) {
+            if (this.getBit(i) !== arg1.getBit(i)) {
                 return false;
             }
         }
@@ -614,7 +660,7 @@ export default class UnlimInt {
         return result;
     }
 
-    public compare(other: UnlimInt): number {
+    public compare(other: ArgType): number {
         if (this.greaterThan(other)) {
             return 1;
         } else if (this.lessThan(other)) {
@@ -728,7 +774,7 @@ export default class UnlimInt {
             const computed: string[] = [];
 
             while (!temp.isZero()) {
-                const divmod = temp.divop(UnlimInt.fromNumber(base));
+                const divmod = temp.divop(base);
 
                 // console.log(divmod);
 
@@ -950,7 +996,7 @@ export default class UnlimInt {
                 const digitValue = UnlimInt.fromNumber(digit).mul(multiplier);
 
                 result = result.add(digitValue);
-                multiplier = multiplier.mul(UnlimInt.fromNumber(10));
+                multiplier = multiplier.mul(10);
             }
 
             /* Add the sign */

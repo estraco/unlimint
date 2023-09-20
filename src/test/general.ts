@@ -21,9 +21,9 @@ export default function generalTest() {
     console.log(`b16str: ${b16str}`);
     console.log(e.toString(2), e.toString(10), e.toString(16));
 
-    console.log(`${a.toNumber()}.add(${b.toNumber()})`, a.add(b).toNumber(), `${a.toNumber()}.add(${b.toNumber()}) === 5.add(3) === 8`);
-    console.log(`${a.toNumber()}.sub(${b.toNumber()})`, a.sub(b).toNumber(), `${a.toNumber()}.sub(${b.toNumber()}) === 5.sub(3) === 2`);
-    console.log(`${a.toNumber()}.mul(${b.toNumber()})`, a.mul(b).toNumber(), `${a.toNumber()}.mul(${b.toNumber()}) === 5.mul(3) === 15`);
+    console.log(`${a.toNumber()}.add(${b.toNumber()})`, a.cadd(b).toNumber(), `${a.toNumber()}.add(${b.toNumber()}) === 5.cadd(3) === 8`);
+    console.log(`${a.toNumber()}.sub(${b.toNumber()})`, a.csub(b).toNumber(), `${a.toNumber()}.sub(${b.toNumber()}) === 5.csub(3) === 2`);
+    console.log(`${a.toNumber()}.mul(${b.toNumber()})`, a.cmul(b).toNumber(), `${a.toNumber()}.mul(${b.toNumber()}) === 5.cmul(3) === 15`);
     console.log(`${a.toNumber()}.div(${b.toNumber()})`, a.div(b).toNumber(), `${a.toNumber()}.div(${b.toNumber()}) === 5.div(3) === 1`);
     console.log(`${a.toNumber()}.mod(${b.toNumber()})`, a.mod(b).toNumber(), `${a.toNumber()}.mod(${b.toNumber()}) === 5.mod(3) === 2`);
 

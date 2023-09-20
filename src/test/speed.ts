@@ -4,8 +4,8 @@ import { hrtime } from 'process';
 
 import ProgressBar from 'ezpb';
 
-const MAX_BIT_COUNT = 96;
-const LOOP_COUNT = 32;
+const MAX_BIT_COUNT = 128;
+const LOOP_COUNT = 4;
 
 const MIN_TOSTRING_BASE = 3;
 const MAX_TOSTRING_BASE = 3;
