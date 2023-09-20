@@ -402,6 +402,14 @@ export default class UnlimInt {
         return this.divop(other).remainder;
     }
 
+    public log2(): UnlimInt {
+        return UnlimInt.fromNumber(this.size - 1);
+    }
+
+    public log(base: UnlimInt): UnlimInt {
+        return this.log2().div(base.log2());
+    }
+
     public bitAnd(other: ArgType, size?: number): UnlimInt {
         const arg1 = other instanceof UnlimInt ? other : UnlimInt.from(other);
 
